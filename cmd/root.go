@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/beabys/file-benchmark-s3/adapters"
 	"gitlab.com/beabys/file-benchmark-s3/file"
+	"gopkg.in/ini.v1"
 )
 
 type Files []*file.File
@@ -27,7 +28,7 @@ type Proccess struct {
 
 var concurrency, maxFileSize, minFileSize, filesNo int
 var workingFolder, outputPath, path, originalPath, downloadPath string
-var spinAnimation bool
+var spinAnimation, generateConfig bool
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -49,6 +50,7 @@ func init() {
 	rootCmd.Flags().IntVarP(&minFileSize, "min-file-fize", "i", 5, "Min size in Mb allocated for each test file.")
 	rootCmd.Flags().StringVarP(&originalPath, "path", "p", "./", "Path where the test files will be created.")
 	rootCmd.Flags().BoolVarP(&spinAnimation, "spinner", "s", false, "Show spinner, just to know if still alive the proccess, don't use if running on background")
+	rootCmd.Flags().BoolVarP(&generateConfig, "generate-config", "g", false, "Generate a config file to conect to S3")
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -59,6 +61,18 @@ var rootCmd = &cobra.Command{
 	file-benchmark is a tool to test speed on basic operations on s3 object storage.
 	useful when need to test speed on S3 object.`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		// Generating Config File for S3
+		if generateConfig {
+			err := generateConfigFile()
+			if err != nil {
+				log.Fatalf(err.Error())
+				os.Exit(1)
+			}
+			fmt.Println("File Generated ./s3Config.ini")
+			os.Exit(0)
+		}
+
 		proccess := &Proccess{
 			StartTime:      time.Now(),
 			concurrentJobs: concurrency,
@@ -70,14 +84,10 @@ var rootCmd = &cobra.Command{
 		downloadPath = splitString(fmt.Sprintf("%sdownload_%s", originalPath, workingFolder), "/", true)
 
 		// Creating new S3 Config
-		s3Config := &adapters.S3Config{
-			Region:           "",
-			AccessKeyID:      "",
-			SecretAccessKey:  "",
-			Endpoint:         "",
-			Bucket:           "",
-			DisableSSL:       true,
-			S3ForcePathStyle: true,
+		s3Config, err := readConfig()
+		if err != nil {
+			log.Fatalf(err.Error())
+			os.Exit(1)
 		}
 
 		// Creating new session
@@ -368,4 +378,57 @@ func splitString(s string, separator string, allowPrepend bool) string {
 	newString += "/"
 	return newString
 
+}
+
+func generateConfigFile() error {
+	fileContent := "region=\naccess_key=\nsecret_access_key=\nendpoint=\nbucket="
+	err := os.WriteFile(fmt.Sprintf("./s3Config.ini"), []byte(fileContent), 0666)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func readConfig() (*adapters.S3Config, error) {
+	cfg, err := ini.Load("./s3Config.ini")
+	if err != nil {
+		return nil, err
+	}
+	section := cfg.Section("")
+
+	region := section.Key("region").MustString("")
+	if region == "" {
+		return nil, fmt.Errorf("region cannot be empty")
+	}
+
+	accessKey := section.Key("access_key").MustString("")
+	if accessKey == "" {
+		return nil, fmt.Errorf("access_key cannot be empty")
+	}
+
+	secretKey := section.Key("secret_access_key").MustString("")
+	if secretKey == "" {
+		return nil, fmt.Errorf("secret_access_key cannot be empty")
+	}
+
+	endpoint := section.Key("endpoint").MustString("")
+	if endpoint == "" {
+		return nil, fmt.Errorf("endpoint cannot be empty")
+	}
+
+	bucket := section.Key("bucket").MustString("")
+	if bucket == "" {
+		return nil, fmt.Errorf("bucket cannot be empty")
+	}
+
+	s3Config := &adapters.S3Config{
+		Region:           region,
+		AccessKeyID:      accessKey,
+		SecretAccessKey:  secretKey,
+		Endpoint:         endpoint,
+		Bucket:           bucket,
+		DisableSSL:       true,
+		S3ForcePathStyle: true,
+	}
+	return s3Config, nil
 }

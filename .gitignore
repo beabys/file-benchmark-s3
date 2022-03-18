@@ -2,3 +2,5 @@ vendor/
 .DS_Store
 result.csv
 file-benchmark
+s3ConfigLocal.ini
+s3Config.ini
