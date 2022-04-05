@@ -1,4 +1,4 @@
-module gitlab.com/beabys/file-benchmark-s3
+module github.com/beabys/file-benchmark-s3
 
 go 1.16
 

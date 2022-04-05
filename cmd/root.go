@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/beabys/file-benchmark-s3/adapters"
+	"github.com/beabys/file-benchmark-s3/file"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
-	"gitlab.com/beabys/file-benchmark-s3/adapters"
-	"gitlab.com/beabys/file-benchmark-s3/file"
 	"gopkg.in/ini.v1"
 )
 

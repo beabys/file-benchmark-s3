@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"gitlab.com/beabys/file-benchmark-s3/adapters"
+	"github.com/beabys/file-benchmark-s3/adapters"
 )
 
 // File is a struct to define files attributes
