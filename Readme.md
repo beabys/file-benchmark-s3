@@ -4,7 +4,7 @@ file-benchmark-s3 is a tool to test speed on basic operations on files
 useful when need to test speed on S3 Object Storage.
 
 ## Usage:
-```
+
 file-benchmark [flags]
 
 Flags:
