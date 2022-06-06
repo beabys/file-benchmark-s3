@@ -4,8 +4,9 @@ file-benchmark-s3 is a tool to test speed on basic operations on files
 useful when need to test speed on S3 Object Storage.
 
 ## Usage:
-
-file-benchmark [flags]
+```
+file-bechmak-s3 [flags]
+```
 
 Flags:
 
@@ -26,7 +27,7 @@ Config file Generation
 file-bechmak-s3 requires a config file `s3Config.ini` this can be generated using the command:
 
 ```bash
-$ ./file-benchmark-s3 -c10 -f 100 -m10 -i5 -o ./100files -p /mnt/s3fs/
+$ ./file-benchmark-s3 -g
 ```
 after the file is generated, only need to fill the required variables
 
