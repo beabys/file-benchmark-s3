@@ -11,21 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-type S3Session struct {
-	Bucket  string
-	session *session.Session
-}
-
-type S3Config struct {
-	Region           string
-	AccessKeyID      string
-	SecretAccessKey  string
-	Endpoint         string
-	Bucket           string
-	DisableSSL       bool
-	S3ForcePathStyle bool
-}
-
 // New create a new session to connect to s3 Object storage
 func NewS3(s *S3Config) (*S3Session, error) {
 	s3Config := &aws.Config{
@@ -57,11 +42,11 @@ func (s *S3Session) Connect() error {
 	return err
 }
 
-//UploadObject is a function to upload to s3 onject storage
+// UploadObject is a function to upload to s3 onject storage
 func (s *S3Session) UploadObject(src, objectKey string) error {
 	// Create an uploader with the session and default options
 	u := s3manager.NewUploader(s.session)
-	var err error
+	// var err error
 	file, err := os.Open(src)
 	if err != nil {
 		return err
@@ -81,9 +66,6 @@ func (s *S3Session) UploadObject(src, objectKey string) error {
 // Download file from s3 bucket, dst includes filename
 func (s *S3Session) DownloadObject(objectKey, dst string) error {
 	// create neccessary folder adn file
-	// if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
-	// 	return err
-	// }
 	file, err := os.Create(dst)
 	if err != nil {
 		return err
